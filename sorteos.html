@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorteos de Instagram</title>
+<style>
+:root{
+  --bg:#f5f6fa;--card:#fff;--text:#1c1e26;--muted:#6a6f80;--border:#e1e4ec;
+  --primary:#6c47ff;--primary-ink:#fff;--ok:#12805c;--ok-bg:#e0f5ec;--bad:#b4232c;--bad-bg:#fde8ea;
+  --input:#fff;--shadow:0 1px 3px rgba(20,20,50,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#12131a;--card:#1c1e29;--text:#eceef5;--muted:#9aa0b4;--border:#2d3040;
+  --primary:#8a6bff;--primary-ink:#fff;--ok:#4fd1a1;--ok-bg:#12332a;--bad:#ff8a93;--bad-bg:#3a1a1e;--input:#14151d;--shadow:none}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:28px 16px 8px;text-align:center}
+header h1{margin:0;font-size:1.7rem}
+header p{margin:4px 0 0;color:var(--muted)}
+main{max-width:960px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 14px;font-size:1.15rem;display:flex;align-items:center;gap:10px}
+.num{background:var(--primary);color:var(--primary-ink);width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.9rem;flex:none}
+label{display:block;font-weight:600;font-size:.88rem;margin:12px 0 4px}
+label.chk{display:flex;gap:8px;align-items:center;font-weight:500;margin:10px 0}
+input[type=text],input[type=password],input[type=number],input[type=datetime-local],textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--input);color:var(--text);font:inherit}
+textarea{min-height:130px;resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:.85rem}
+input:focus,textarea:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.hint{color:var(--muted);font-size:.82rem;margin-top:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 16px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:9px 14px}
+button.primary{background:var(--primary);color:var(--primary-ink);border-color:var(--primary);font-weight:600}
+button.small{padding:4px 10px;font-size:.8rem}
+button:disabled{opacity:.55;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;border-bottom:1px solid var(--border)}
+.tab{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:8px 12px;color:var(--muted)}
+.tab[aria-selected=true]{color:var(--text);border-color:var(--primary);font-weight:600}
+.msg{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:.9rem;display:none;white-space:pre-wrap}
+.msg.show{display:block}
+.msg.err{background:var(--bad-bg);color:var(--bad)}
+.msg.ok{background:var(--ok-bg);color:var(--ok)}
+.msg.info{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+details{margin-top:14px;border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+summary{cursor:pointer;font-weight:600}
+details ol{padding-left:20px;margin:8px 0}
+code{background:var(--bg);padding:1px 5px;border-radius:4px;font-size:.85em}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:14px}
+.stat{background:var(--bg);border-radius:10px;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.6rem}
+.stat span{color:var(--muted);font-size:.82rem}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{padding:8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{color:var(--muted);font-size:.78rem;text-transform:uppercase}
+td.c{max-width:280px;overflow-wrap:anywhere}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.78rem;font-weight:600}
+.badge.ok{background:var(--ok-bg);color:var(--ok)}
+.badge.bad{background:var(--bad-bg);color:var(--bad)}
+.reason{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.filters button[aria-pressed=true]{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.roulette{font-size:1.6rem;font-weight:700;text-align:center;padding:22px 10px;background:var(--bg);border-radius:12px;margin:14px 0;min-height:76px;overflow-wrap:anywhere}
+.roulette.spin{color:var(--primary)}
+.winners li{margin:6px 0}
+.winners a{color:var(--primary);font-weight:600}
+pre.acta{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;white-space:pre-wrap;font-size:.85rem;overflow-wrap:anywhere}
+.hidden{display:none!important}
+footer{text-align:center;color:var(--muted);font-size:.82rem;padding:10px 16px 34px}
+footer a{color:var(--primary)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎉 Sorteos de Instagram</h1>
+  <p>Todo se ejecuta en tu navegador. No se envían datos a ningún servidor propio.</p>
+</header>
+<main>
+
+<!-- PASO 1 -->
+<section class="card" id="step1">
+  <h2><span class="num">1</span> Traer los comentarios</h2>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabApi" aria-selected="true">Con el link (API de Meta)</button>
+    <button class="tab" role="tab" id="tabPaste" aria-selected="false">Pegar o subir comentarios</button>
+  </div>
+
+  <div id="paneApi">
+    <label for="postUrl">Link de la publicación o reel</label>
+    <input type="text" id="postUrl" placeholder="https://www.instagram.com/p/ABC123xyz/" autocomplete="off">
+    <div class="grid">
+      <div><label for="igUserId">Instagram User ID</label>
+        <input type="text" id="igUserId" placeholder="17841400000000000" autocomplete="off"></div>
+      <div><label for="token">Access token</label>
+        <input type="password" id="token" placeholder="EAAB..." autocomplete="off">
+        <div class="hint">No se guarda en ningún sitio: se pierde al cerrar o recargar la página.</div></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="incReplies"> Incluir respuestas a comentarios</label>
+    <div class="row"><button class="primary" id="btnFetch">Traer comentarios</button></div>
+    <details>
+      <summary>¿Cómo obtengo gratis el token y el User ID?</summary>
+      <ol>
+        <li>Convierte tu Instagram en cuenta <b>Profesional</b> (Empresa o Creador) y vincúlala a una <b>Página de Facebook</b>.</li>
+        <li>En <code>developers.facebook.com</code> crea una app de tipo <b>Empresa</b>.</li>
+        <li>Abre el <b>Explorador de la API Graph</b>, elige tu app y genera un token de usuario con los permisos <code>instagram_basic</code>, <code>instagram_manage_comments</code> y <code>pages_show_list</code>.</li>
+        <li>Con ese token consulta <code>me/accounts?fields=instagram_business_account</code>. El <code>id</code> dentro de <code>instagram_business_account</code> es tu <b>Instagram User ID</b>.</li>
+        <li>En modo desarrollo, con tu propia cuenta como administrador, <b>no hace falta la revisión de Meta</b>.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div id="panePaste" class="hidden">
+    <label for="pasteArea">Comentarios</label>
+    <textarea id="pasteArea" placeholder="usuario: comentario&#10;o CSV: username,text,timestamp&#10;o JSON: [{&quot;username&quot;:&quot;...&quot;,&quot;text&quot;:&quot;...&quot;}]"></textarea>
+    <div class="hint">Formatos: líneas <code>usuario: comentario</code>, CSV con cabecera (<code>username,text,timestamp</code>) o JSON.</div>
+    <label for="fileComments">…o sube un archivo (.csv, .json, .txt)</label>
+    <input type="file" id="fileComments" accept=".csv,.json,.txt">
+    <div class="row">
+      <button class="primary" id="btnLoadPaste">Cargar comentarios</button>
+      <button id="btnSample">Cargar datos de ejemplo</button>
+    </div>
+  </div>
+  <div class="msg" id="msg1" role="status"></div>
+</section>
+
+<!-- PASO 2 -->
+<section class="card" id="step2">
+  <h2><span class="num">2</span> Reglas del sorteo</h2>
+  <div class="grid">
+    <div><label for="account">Mi cuenta (sin @)</label>
+      <input type="text" id="account" placeholder="mi_empresa" autocomplete="off">
+      <div class="hint">Sus comentarios y menciones se excluyen.</div></div>
+    <div><label for="minTags">Etiquetas mínimas por comentario</label>
+      <input type="number" id="minTags" min="0" value="0">
+      <div class="hint">0 = no se exige. Solo cuentan menciones únicas.</div></div>
+    <div><label for="deadline">Fecha límite (opcional)</label>
+      <input type="datetime-local" id="deadline">
+      <div class="hint">Los comentarios posteriores no cuentan.</div></div>
+  </div>
+  <label for="required">Palabras o hashtags obligatorios (separados por coma)</label>
+  <input type="text" id="required" placeholder="#sorteo, quiero" autocomplete="off">
+  <label for="excluded">Usuarios excluidos (separados por coma)</label>
+  <input type="text" id="excluded" placeholder="usuario1, usuario2" autocomplete="off">
+  <label class="chk"><input type="checkbox" id="oneEntry" checked> Una sola participación por persona</label>
+  <div class="hint" style="margin-top:-6px">Si lo desactivas, cada comentario válido da un boleto.</div>
+  <label class="chk"><input type="checkbox" id="reqFollow"> Debe seguir la cuenta</label>
+  <div id="followBox" class="hidden">
+    <div class="hint">Instagram no permite leer seguidores por API. Descarga tu información: Configuración → Centro de cuentas → Tu información y permisos → Descargar tu información → Seguidores y seguidos → formato JSON. Sube <code>followers_1.json</code>, <code>followers_2.json</code>, etc.</div>
+    <label for="fileFollowers">Archivos de seguidores</label>
+    <input type="file" id="fileFollowers" accept=".json,.txt,.csv" multiple>
+    <label for="followArea">…o pega usuarios (uno por línea)</label>
+    <textarea id="followArea" style="min-height:80px"></textarea>
+    <div class="row"><button id="btnFollowPaste">Cargar texto pegado</button><strong id="followCount">0 seguidores cargados</strong></div>
+  </div>
+  <div class="row"><button class="primary" id="btnAnalyze">Analizar participantes</button></div>
+  <div class="msg" id="msg2" role="status"></div>
+</section>
+
+<!-- PASO 3 -->
+<section class="card hidden" id="step3">
+  <h2><span class="num">3</span> Resultados</h2>
+  <div class="stats" id="stats"></div>
+  <div class="filters" id="filters">
+    <button data-f="all" aria-pressed="true">Todos</button>
+    <button data-f="valid" aria-pressed="false">Válidos</button>
+    <button data-f="invalid" aria-pressed="false">No válidos</button>
+    <span style="flex:1"></span>
+    <button id="btnCsv">Exportar CSV</button>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Usuario</th><th>Comentario</th><th>Etiquetas</th><th>Sigue</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- PASO 4 -->
+<section class="card hidden" id="step4">
+  <h2><span class="num">4</span> Sorteo</h2>
+  <div class="grid">
+    <div><label for="nWin">Número de ganadores</label><input type="number" id="nWin" min="1" value="1"></div>
+    <div><label for="nAlt">Número de suplentes</label><input type="number" id="nAlt" min="0" value="2"></div>
+  </div>
+  <div class="hint" id="poolInfo"></div>
+  <div class="row"><button class="primary" id="btnDraw">🎲 Realizar sorteo</button></div>
+  <div class="msg" id="msg4" role="status"></div>
+  <div class="roulette hidden" id="roulette" aria-live="polite"></div>
+  <div id="drawOut" class="hidden">
+    <h3>Ganadores</h3><ol class="winners" id="winList"></ol>
+    <h3>Suplentes</h3><ol class="winners" id="altList"></ol>
+    <h3>Acta del sorteo</h3>
+    <pre class="acta" id="acta"></pre>
+    <div class="row"><button id="btnCopy">Copiar acta</button><button id="btnWinCsv">Exportar ganadores a CSV</button></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  Recuerda cumplir las <a href="https://help.instagram.com/179379042645903" target="_blank" rel="noopener noreferrer">normas de promociones de Instagram</a>.
+  Esta herramienta no está afiliada a Instagram ni a Meta.
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+const state = { comments: [], followers: new Set(), rows: [], overrides: new Map(), filter: "all", rules: null, draw: null };
+
+/* ---------- Mensajes ---------- */
+function msg(id, text, kind) {
+  const el = $(id);
+  el.className = "msg" + (text ? " show " + (kind || "info") : "");
+  el.textContent = text || "";
+}
+
+/* ---------- localStorage (solo User ID y cuenta; nunca el token) ---------- */
+function lsGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+$("igUserId").value = lsGet("sorteos_userid");
+$("account").value = lsGet("sorteos_account");
+$("igUserId").addEventListener("input", e => lsSet("sorteos_userid", e.target.value.trim()));
+$("account").addEventListener("input", e => lsSet("sorteos_account", cleanUser(e.target.value)));
+
+function cleanUser(s) { return String(s || "").trim().replace(/^@/, "").toLowerCase(); }
+
+/* ---------- Pestañas ---------- */
+function showTab(api) {
+  $("tabApi").setAttribute("aria-selected", api);
+  $("tabPaste").setAttribute("aria-selected", !api);
+  $("paneApi").classList.toggle("hidden", !api);
+  $("panePaste").classList.toggle("hidden", api);
+}
+$("tabApi").onclick = () => showTab(true);
+$("tabPaste").onclick = () => showTab(false);
+
+/* ---------- Fechas ---------- */
+function parseDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) return isNaN(v) ? null : v;
+  let s = String(v).trim();
+  if (/^\d{10,13}$/.test(s)) { const n = +s; return new Date(s.length === 10 ? n * 1000 : n); }
+  s = s.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");      // +0000 -> +00:00 (Safari)
+  if (/^\d{4}-\d{2}-\d{2} \d/.test(s)) s = s.replace(" ", "T");
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+/* ---------- Instagram Graph API ---------- */
+async function gget(url) {
+  let res;
+  try { res = await fetch(url); }
+  catch (e) { throw new Error("No se pudo conectar con Meta. Revisa tu conexión a internet."); }
+  let data = null;
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok || (data && data.error)) {
+    const er = (data && data.error) || {};
+    let m = er.message || ("Error HTTP " + res.status);
+    if (er.code === 190) m = "El token no es válido o expiró. Genera uno nuevo en el Explorador de la API Graph.\n(" + m + ")";
+    else if (er.code === 10 || er.code === 200) m = "Faltan permisos. El token necesita instagram_basic, instagram_manage_comments y pages_show_list.\n(" + m + ")";
+    else if (er.code === 4 || er.code === 17 || er.code === 32) m = "Meta limitó las solicitudes. Espera unos minutos e inténtalo de nuevo.\n(" + m + ")";
+    throw new Error(m);
+  }
+  return data;
+}
+
+function extractShortcode(url) {
+  const m = String(url).match(/instagram\.com\/(?:[^/?#]+\/)?(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i) ||
+            String(url).match(/\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/i);
+  return m ? m[1] : null;
+}
+
+async function fetchFromApi() {
+  const url = $("postUrl").value.trim(), uid = $("igUserId").value.trim(), token = $("token").value.trim();
+  const withReplies = $("incReplies").checked;
+  if (!url || !uid || !token) return msg("msg1", "Completa el link, el Instagram User ID y el access token.", "err");
+  const code = extractShortcode(url);
+  if (!code) return msg("msg1", "No reconozco el link. Debe contener /p/, /reel/ o /tv/ seguido del código de la publicación.", "err");
+  const tk = "&access_token=" + encodeURIComponent(token);
+  const base = "https://graph.facebook.com/" + encodeURIComponent(uid);
+  $("btnFetch").disabled = true;
+  try {
+    msg("msg1", "Consultando tu cuenta…", "info");
+    try {
+      const me = await gget(base + "?fields=username" + tk);
+      if (me.username) { $("account").value = me.username.toLowerCase(); lsSet("sorteos_account", me.username.toLowerCase()); }
+    } catch (e) { if (/token|permis/i.test(e.message)) throw e; }
+    lsSet("sorteos_userid", uid);
+
+    let next = base + "/media?fields=id,shortcode,permalink,timestamp&limit=100" + tk, mediaId = null, scanned = 0;
+    while (next && !mediaId) {
+      const page = await gget(next);
+      for (const m of page.data || []) { scanned++; if (m.shortcode === code) { mediaId = m.id; break; } }
+      msg("msg1", `Buscando la publicación… (${scanned} revisadas)`, "info");
+      next = page.paging && page.paging.next;
+    }
+    if (!mediaId) throw new Error(`No encontré la publicación "${code}" en esa cuenta (${scanned} revisadas). Verifica que el link sea de la cuenta con ese User ID.`);
+
+    const fields = "id,text,username,timestamp" + (withReplies ? ",replies.limit(100){id,text,username,timestamp}" : "");
+    next = "https://graph.facebook.com/" + encodeURIComponent(mediaId) + "/comments?fields=" + encodeURIComponent(fields) + "&limit=100" + tk;
+    const out = [];
+    while (next) {
+      const page = await gget(next);
+      for (const c of page.data || []) {
+        out.push({ username: c.username || "", text: c.text || "", timestamp: parseDate(c.timestamp) });
+        if (withReplies && c.replies && c.replies.data)
+          for (const r of c.replies.data) out.push({ username: r.username || "", text: r.text || "", timestamp: parseDate(r.timestamp) });
+      }
+      msg("msg1", `Descargando comentarios… (${out.length})`, "info");
+      next = page.paging && page.paging.next;
+    }
+    setComments(out.filter(c => c.username));
+  } catch (e) {
+    msg("msg1", e.message, "err");
+  } finally { $("btnFetch").disabled = false; }
+}
+$("btnFetch").onclick = fetchFromApi;
+
+/* ---------- Parseo de comentarios pegados ---------- */
+function parseCSV(text) {
+  const rows = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ",") { row.push(cur); cur = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(cur); cur = ""; if (row.some(x => x.trim() !== "")) rows.push(row); row = [];
+    } else cur += ch;
+  }
+  row.push(cur); if (row.some(x => x.trim() !== "")) rows.push(row);
+  return rows;
+}
+
+function parseComments(raw) {
+  const text = raw.replace(/^﻿/, "").trim();
+  if (!text) throw new Error("No hay nada que cargar. Pega comentarios o sube un archivo.");
+  let out = [], skipped = 0;
+  if (/^[\[{]/.test(text)) {
+    let j;
+    try { j = JSON.parse(text); } catch (e) { throw new Error("El JSON no es válido: " + e.message); }
+    if (!Array.isArray(j)) j = j.data || j.comments || j.comentarios || [];
+    if (!Array.isArray(j)) throw new Error("El JSON debe ser un array de objetos con username y text.");
+    for (const o of j) {
+      const u = o && (o.username || o.user || o.usuario || (o.from && o.from.username) || (o.owner && o.owner.username));
+      const t = o && (o.text ?? o.comment ?? o.comentario ?? o.message);
+      if (u && t != null) out.push({ username: String(u), text: String(t), timestamp: parseDate(o.timestamp || o.date || o.fecha || o.created_at) }); else skipped++;
+    }
+  } else {
+    const firstLine = text.split(/\r?\n/)[0].toLowerCase();
+    if (firstLine.includes(",") && /(username|usuario|user)/.test(firstLine) && /(text|comentario|comment|texto)/.test(firstLine)) {
+      const rows = parseCSV(text), head = rows[0].map(h => h.trim().toLowerCase());
+      const idx = names => head.findIndex(h => names.includes(h));
+      const iu = idx(["username", "usuario", "user"]), it = idx(["text", "texto", "comentario", "comment"]), id = idx(["timestamp", "fecha", "date"]);
+      for (const r of rows.slice(1)) {
+        const u = (r[iu] || "").trim();
+        if (u) out.push({ username: u.replace(/^@/, ""), text: r[it] || "", timestamp: id >= 0 ? parseDate(r[id]) : null }); else skipped++;
+      }
+    } else {
+      for (const line of text.split(/\r?\n/)) {
+        if (!line.trim()) continue;
+        const m = line.match(/^\s*@?([A-Za-z0-9._]+)\s*:\s*(.*)$/);
+        if (m) out.push({ username: m[1], text: m[2], timestamp: null }); else skipped++;
+      }
+    }
+  }
+  if (!out.length) throw new Error("No pude leer ningún comentario. Revisa que el formato sea usuario: comentario, CSV con cabecera o JSON.");
+  return { comments: out, skipped };
+}
+
+function setComments(list, note) {
+  state.comments = list;
+  const users = new Set(list.map(c => c.username.toLowerCase())).size;
+  msg("msg1", `✓ ${list.length} comentarios de ${users} usuarios cargados.` + (note || ""), "ok");
+}
+
+function loadPaste() {
+  try {
+    const { comments, skipped } = parseComments($("pasteArea").value);
+    setComments(comments, skipped ? ` (${skipped} líneas ignoradas por formato)` : "");
+  } catch (e) { msg("msg1", e.message, "err"); }
+}
+$("btnLoadPaste").onclick = loadPaste;
+$("fileComments").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { $("pasteArea").value = await f.text(); loadPaste(); } catch (err) { msg("msg1", "No se pudo leer el archivo.", "err"); }
+};
+
+/* ---------- Seguidores ---------- */
+function userFromHref(h) {
+  const m = String(h || "").match(/instagram\.com\/(?:_u\/)?([A-Za-z0-9._]+)/i);
+  return m ? m[1] : "";
+}
+function collectFollowers(node, set) {
+  if (Array.isArray(node)) return node.forEach(n => collectFollowers(n, set));
+  if (!node || typeof node !== "object") return;
+  if (Array.isArray(node.string_list_data)) {
+    for (const s of node.string_list_data) {
+      const u = (s.value && String(s.value).trim()) || userFromHref(s.href);
+      if (u) set.add(u.replace(/^@/, "").toLowerCase());
+    }
+    if (node.title && !node.string_list_data.length) set.add(String(node.title).toLowerCase());
+    return;
+  }
+  Object.values(node).forEach(v => collectFollowers(v, set));
+}
+function parseFollowers(raw) {
+  const text = raw.replace(/^﻿/, "").trim(), set = new Set();
+  if (!text) return set;
+  if (/^[\[{]/.test(text)) {
+    let j; try { j = JSON.parse(text); } catch (e) { throw new Error("JSON de seguidores no válido: " + e.message); }
+    collectFollowers(j, set);   // cubre [{string_list_data}] y {relationships_followers:[...]}
+  } else {
+    for (const line of text.split(/\r?\n/)) {
+      const u = (userFromHref(line) || line.trim().replace(/^@/, "")).split(/[\s,;]/)[0];
+      if (/^[A-Za-z0-9._]+$/.test(u)) set.add(u.toLowerCase());
+    }
+  }
+  return set;
+}
+function updateFollowCount() { $("followCount").textContent = state.followers.size + " seguidores cargados"; }
+$("reqFollow").onchange = e => $("followBox").classList.toggle("hidden", !e.target.checked);
+$("fileFollowers").onchange = async e => {
+  try {
+    for (const f of e.target.files) parseFollowers(await f.text()).forEach(u => state.followers.add(u));
+    updateFollowCount();
+    msg("msg2", state.followers.size ? `✓ ${state.followers.size} seguidores cargados.` : "No encontré usuarios en los archivos. ¿Son los followers_*.json?", state.followers.size ? "ok" : "err");
+  } catch (err) { msg("msg2", err.message, "err"); }
+};
+$("btnFollowPaste").onclick = () => {
+  try { parseFollowers($("followArea").value).forEach(u => state.followers.add(u)); updateFollowCount(); msg("msg2", "", ""); }
+  catch (err) { msg("msg2", err.message, "err"); }
+};
+
+/* ---------- Análisis ---------- */
+function extractMentions(text, author, account) {
+  const set = new Set(), re = /(^|[^A-Za-z0-9._@])@([A-Za-z0-9._]+)/g;
+  let m;
+  while ((m = re.exec(text))) {
+    const u = m[2].replace(/\.+$/, "").toLowerCase();
+    if (u && u !== author && u !== account) set.add(u);
+  }
+  return [...set];
+}
+const splitList = s => s.split(",").map(x => x.trim()).filter(Boolean);
+
+function readRules() {
+  const dl = $("deadline").value;
+  return {
+    account: cleanUser($("account").value),
+    minTags: Math.max(0, parseInt($("minTags").value, 10) || 0),
+    deadline: dl ? new Date(dl) : null,
+    deadlineText: dl,
+    required: splitList($("required").value),
+    excluded: new Set(splitList($("excluded").value).map(cleanUser)),
+    oneEntry: $("oneEntry").checked,
+    reqFollow: $("reqFollow").checked
+  };
+}
+
+function evalComment(c, r, followers) {
+  const u = c.username.toLowerCase(), reasons = [];
+  const mentions = extractMentions(c.text, u, r.account);
+  if (r.account && u === r.account) reasons.push("Es la cuenta del sorteo");
+  if (r.excluded.has(u)) reasons.push("Usuario excluido");
+  if (r.deadline && c.timestamp && c.timestamp > r.deadline) reasons.push("Comentó después de la fecha límite");
+  if (r.minTags > 0 && mentions.length < r.minTags)
+    reasons.push(mentions.length === 0 ? "No etiquetó a nadie" : `Etiquetó a ${mentions.length} de ${r.minTags} personas requeridas`);
+  const t = norm(c.text), missing = r.required.filter(w => !t.includes(norm(w)));
+  if (missing.length) reasons.push("Falta: " + missing.join(", "));
+  if (r.reqFollow && !followers.has(u)) reasons.push("No sigue la cuenta");
+  return { comment: c, mentions, reasons };
+}
+
+function analyze(comments, r, followers) {
+  const groups = new Map();
+  for (const c of comments) {
+    const k = c.username.toLowerCase();
+    if (!groups.has(k)) groups.set(k, { user: c.username, key: k, evals: [] });
+    groups.get(k).evals.push(evalComment(c, r, followers));
+  }
+  return [...groups.values()].map(g => {
+    const valids = g.evals.filter(e => !e.reasons.length);
+    let best = valids[0];
+    if (!best) best = g.evals.reduce((a, b) => (b.reasons.length < a.reasons.length ? b : a));
+    return { user: g.user, key: g.key, evals: g.evals, best, validCount: valids.length,
+             follows: followers.size ? followers.has(g.key) : null };
+  });
+}
+
+function statusOf(row) {
+  const o = state.overrides.get(row.key), base = row.best.reasons;
+  if (o === "approve") return { valid: true, text: "Aprobado manualmente" + (base.length ? " (antes: " + base.join("; ") + ")" : "") };
+  if (o === "reject") return { valid: false, text: "Descartado manualmente" + (base.length ? " (" + base.join("; ") + ")" : "") };
+  return { valid: !base.length, text: base.join("; ") };
+}
+function ticketsOf(row, rules) {
+  const s = statusOf(row);
+  if (!s.valid) return 0;
+  return rules.oneEntry ? 1 : Math.max(1, row.validCount);
+}
+
+$("btnAnalyze").onclick = () => {
+  msg("msg2", "", "");
+  if (!state.comments.length) return msg("msg2", "Primero carga los comentarios en el paso 1.", "err");
+  const r = readRules();
+  if (r.reqFollow && !state.followers.size)
+    return msg("msg2", "Activaste «Debe seguir la cuenta» pero no hay lista de seguidores cargada. Sube los archivos followers_*.json o pega los usuarios.", "err");
+  state.rules = r; state.rules.minTagsApplied = r.minTags;
+  state.rows = analyze(state.comments, r, state.followers);
+  state.overrides.clear(); state.draw = null;
+  $("drawOut").classList.add("hidden"); $("roulette").classList.add("hidden");
+  $("step3").classList.remove("hidden"); $("step4").classList.remove("hidden");
+  renderResults();
+  $("step3").scrollIntoView({ behavior: "smooth" });
+};
+
+/* ---------- Resultados ---------- */
+function renderResults() {
+  const rows = state.rows, valid = rows.filter(r => statusOf(r).valid).length;
+  $("stats").innerHTML = [["Comentarios", state.comments.length], ["Usuarios", rows.length], ["Válidos", valid], ["No válidos", rows.length - valid]]
+    .map(([l, n]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("");
+  document.querySelectorAll("#filters [data-f]").forEach(b => b.setAttribute("aria-pressed", b.dataset.f === state.filter));
+  const shown = rows.filter(r => state.filter === "all" || (state.filter === "valid") === statusOf(r).valid);
+  $("tbody").innerHTML = shown.map(r => {
+    const s = statusOf(r), c = r.best.comment, extra = r.evals.length - 1;
+    const follow = r.follows === null ? "—" : r.follows ? "✓" : "✗";
+    const tags = r.best.mentions.length ? r.best.mentions.map(m => "@" + esc(m)).join(" ") : "—";
+    return `<tr><td><b>${esc(r.user)}</b></td>
+      <td class="c">${esc(c.text)}${extra ? `<span class="reason">+${extra} comentario${extra > 1 ? "s" : ""} más</span>` : ""}</td>
+      <td>${tags}</td><td>${follow}</td>
+      <td><span class="badge ${s.valid ? "ok" : "bad"}">${s.valid ? "Válido" : "No válido"}</span>${s.text ? `<span class="reason">${esc(s.text)}</span>` : ""}</td>
+      <td><button class="small" data-u="${esc(r.key)}">${s.valid ? "Descartar" : "Aprobar"}</button></td></tr>`;
+  }).join("") || `<tr><td colspan="6" style="text-align:center;color:var(--muted)">Sin resultados para este filtro.</td></tr>`;
+  const pool = rows.reduce((n, r) => n + (statusOf(r).valid ? 1 : 0), 0);
+  $("poolInfo").textContent = `${pool} participantes válidos en el sorteo.`;
+}
+$("tbody").onclick = e => {
+  const b = e.target.closest("button[data-u]"); if (!b) return;
+  const row = state.rows.find(r => r.key === b.dataset.u);
+  state.overrides.set(row.key, statusOf(row).valid ? "reject" : "approve");
+  state.draw = null; $("drawOut").classList.add("hidden");
+  renderResults();
+};
+$("filters").onclick = e => {
+  const b = e.target.closest("[data-f]"); if (!b) return;
+  state.filter = b.dataset.f; renderResults();
+};
+
+function csvCell(v) {
+  let s = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;       // evita inyección de fórmulas en Excel
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function downloadCsv(name, header, lines) {
+  const body = [header, ...lines].map(l => l.map(csvCell).join(",")).join("\r\n");
+  const blob = new Blob(["﻿" + body], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+$("btnCsv").onclick = () => downloadCsv("participantes.csv",
+  ["usuario", "comentario", "etiquetas", "sigue", "estado", "motivo", "boletos"],
+  state.rows.map(r => { const s = statusOf(r);
+    return [r.user, r.best.comment.text, r.best.mentions.map(m => "@" + m).join(" "),
+      r.follows === null ? "" : r.follows ? "sí" : "no", s.valid ? "Válido" : "No válido", s.text, ticketsOf(r, state.rules)]; }));
+
+/* ---------- Sorteo ---------- */
+function randInt(n) {                       // uniforme en [0,n) con rejection sampling
+  const buf = new Uint32Array(1), limit = 4294967296 - (4294967296 % n);
+  do { crypto.getRandomValues(buf); } while (buf[0] >= limit);
+  return buf[0] % n;
+}
+function pickWinners(rows, rules, count) {
+  let pool = [];
+  for (const r of rows) for (let i = 0; i < ticketsOf(r, rules); i++) pool.push(r);
+  const picked = [];
+  while (picked.length < count && pool.length) {
+    const r = pool[randInt(pool.length)];
+    picked.push(r);
+    pool = pool.filter(x => x !== r);       // sin repetir usuarios
+  }
+  return picked;
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const reduced = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+async function spin(names, finalName) {
+  const el = $("roulette"); el.classList.remove("hidden"); el.classList.add("spin");
+  if (!reduced()) {
+    let delay = 60;
+    for (let t = 0; t < 1800; t += delay) {
+      el.textContent = names[Math.floor(Math.random() * names.length)];   // solo visual
+      await sleep(delay); delay = Math.min(delay * 1.08, 220);
+    }
+  }
+  el.textContent = "@" + finalName; el.classList.remove("spin");
+}
+
+let drawing = false;
+$("btnDraw").onclick = async () => {
+  msg("msg4", "", "");
+  if (drawing) return;
+  const rules = state.rules, eligible = state.rows.filter(r => statusOf(r).valid);
+  const nW = Math.max(1, parseInt($("nWin").value, 10) || 1), nA = Math.max(0, parseInt($("nAlt").value, 10) || 0);
+  if (!eligible.length) return msg("msg4", "No hay participantes válidos para sortear.", "err");
+  if (eligible.length < nW + nA &&
+      !confirm(`Hay ${eligible.length} participantes válidos y pediste ${nW + nA} puestos (${nW} ganadores + ${nA} suplentes). ¿Continuar con los que hay?`)) return;
+  drawing = true; $("btnDraw").disabled = true;
+  const picks = pickWinners(state.rows, rules, nW + nA);
+  const winners = picks.slice(0, nW), alts = picks.slice(nW);
+  const names = eligible.map(r => "@" + r.user);
+  $("drawOut").classList.remove("hidden"); $("winList").innerHTML = ""; $("altList").innerHTML = ""; $("acta").textContent = "";
+  const add = (list, r) => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "https://instagram.com/" + encodeURIComponent(r.user); a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.textContent = "@" + r.user; li.appendChild(a); $(list).appendChild(li);
+  };
+  for (const w of winners) { await spin(names, w.user); add("winList", w); }
+  for (const a of alts) { await spin(names, a.user); add("altList", a); }
+  $("roulette").classList.add("hidden");
+  state.draw = { date: new Date(), winners, alts };
+  $("acta").textContent = buildActa();
+  drawing = false; $("btnDraw").disabled = false;
+  if (picks.length < nW + nA) msg("msg4", `Solo se pudieron asignar ${picks.length} de ${nW + nA} puestos.`, "info");
+};
+
+function buildActa() {
+  const d = state.draw, r = state.rules;
+  const valid = state.rows.filter(x => statusOf(x).valid).length;
+  const manual = [...state.overrides.entries()].map(([k, v]) => `${v === "approve" ? "aprobado" : "descartado"}: @${k}`);
+  const rl = [
+    `Cuenta del sorteo: ${r.account ? "@" + r.account : "(no indicada)"}`,
+    `Etiquetas mínimas por comentario: ${r.minTags || "no se exige"}`,
+    `Fecha límite: ${r.deadlineText ? r.deadlineText.replace("T", " ") : "ninguna"}`,
+    `Palabras/hashtags obligatorios: ${r.required.length ? r.required.join(", ") : "ninguno"}`,
+    `Usuarios excluidos: ${r.excluded.size ? [...r.excluded].join(", ") : "ninguno"}`,
+    `Participación: ${r.oneEntry ? "una por persona" : "un boleto por comentario válido"}`,
+    `Debe seguir la cuenta: ${r.reqFollow ? "sí (" + state.followers.size + " seguidores en la lista)" : "no"}`,
+    `Cambios manuales: ${manual.length ? manual.join("; ") : "ninguno"}`
+  ];
+  return [
+    "ACTA DEL SORTEO",
+    `Fecha y hora: ${d.date.toLocaleString("es")}`,
+    `Comentarios analizados: ${state.comments.length}`,
+    `Usuarios distintos: ${state.rows.length}`,
+    `Participantes válidos: ${valid}`,
+    "", "Reglas aplicadas:", ...rl.map(x => "  - " + x),
+    "", "Método: selección aleatoria con crypto.getRandomValues (muestreo por rechazo, sin sesgo de módulo), sin repetir usuarios.",
+    "", "Ganadores:", ...d.winners.map((w, i) => `  ${i + 1}. @${w.user} — https://instagram.com/${w.user}`),
+    "", "Suplentes:", ...(d.alts.length ? d.alts.map((w, i) => `  ${i + 1}. @${w.user} — https://instagram.com/${w.user}`) : ["  (ninguno)"])
+  ].join("\n");
+}
+$("btnCopy").onclick = async () => {
+  const t = $("acta").textContent;
+  try { await navigator.clipboard.writeText(t); msg("msg4", "Acta copiada al portapapeles.", "ok"); }
+  catch (e) {
+    const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); msg("msg4", "Acta copiada al portapapeles.", "ok"); } catch (_) { msg("msg4", "No se pudo copiar. Selecciona el texto manualmente.", "err"); }
+    ta.remove();
+  }
+};
+$("btnWinCsv").onclick = () => {
+  if (!state.draw) return;
+  const f = (list, tipo) => list.map((w, i) => [tipo, i + 1, w.user, "https://instagram.com/" + w.user]);
+  downloadCsv("ganadores.csv", ["tipo", "puesto", "usuario", "perfil"], [...f(state.draw.winners, "Ganador"), ...f(state.draw.alts, "Suplente")]);
+};
+
+/* ---------- Datos de ejemplo ---------- */
+function loadSample() {
+  const csv = [
+    "username,text,timestamp",
+    'ana_lopez,"¡Quiero ganar! @maria_gomez @juan.perez",2026-11-14T10:05:00+0000',
+    'carlos99,"Participo! Escríbeme a carlos@mail.com",2026-11-14T10:20:00+0000',
+    'luis_m,"Yo quiero @luis_m @pedro_r",2026-11-14T11:00:00+0000',
+    'mi_empresa,"¡Gracias por participar! @cliente_uno @cliente_dos",2026-11-14T11:30:00+0000',
+    'sofia_r,"Me encantaría @amiga.uno @amiga_dos @amiga3",2026-11-14T12:10:00+0000',
+    'diego_t,"Yo!",2026-11-14T12:30:00+0000',
+    'diego_t,"Ahora sí: @ana_lopez @valeria_k",2026-11-14T12:40:00+0000',
+    'diego_t,"Otra vez @camila_z @marcos.dev",2026-11-14T13:00:00+0000',
+    'valeria_k,"Ojalá me toque @diego_t @laura_ok",2026-11-14T14:00:00+0000',
+    'marcos.dev,"Gracias por el sorteo @andres_77 @camila_z",2026-11-15T09:00:00+0000',
+    'laura_ok,"Participando con @valeria_k @marcos.dev @ana_lopez",2026-11-15T15:00:00+0000',
+    'camila_z,"Quiero ese premio @laura_ok @andres_77",2026-11-15T18:45:00+0000',
+    'andres_77,"Vamos por él @diego_t @luis_m",2026-11-15T20:00:00+0000',
+    'tardio_01,"Llegué tarde @ana_lopez @juan.perez",2026-11-16T10:00:00+0000'
+  ].join("\n");
+  $("pasteArea").value = csv;
+  showTab(false);
+  loadPaste();
+  $("account").value = "mi_empresa"; lsSet("sorteos_account", "mi_empresa");
+  $("minTags").value = 2;
+  $("deadline").value = "2026-11-15T23:59";
+  $("reqFollow").checked = true; $("followBox").classList.remove("hidden");
+  state.followers = new Set();
+  const list = ["ana_lopez", "carlos99", "luis_m", "diego_t", "valeria_k", "marcos.dev", "laura_ok", "camila_z", "andres_77", "tardio_01", "maria_gomez", "juan.perez"];
+  // formato oficial de Instagram: array de string_list_data
+  const json = JSON.stringify(list.map(u => ({ title: "", media_list_data: [], string_list_data: [{ href: "https://www.instagram.com/" + u, value: u, timestamp: 1700000000 }] })));
+  parseFollowers(json).forEach(u => state.followers.add(u));
+  updateFollowCount();
+  msg("msg2", "Reglas y seguidores de ejemplo cargados (sofia_r no sigue la cuenta a propósito). Pulsa «Analizar participantes».", "info");
+};
+$("btnSample").onclick = loadSample;
+</script>
+</body>
+</html>
